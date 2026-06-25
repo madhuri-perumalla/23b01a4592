@@ -1,18 +1,22 @@
-require("dotenv").config();
-const token = process.env.TOKEN;
-const fetch = require("node-fetch");
-const { Log } = require("../../logging-middleware");
+import dotenv from "dotenv";
+dotenv.config();
 
-// Priority mapping
+const fetch = global.fetch;
+
+
+import { Log } from "../../logging-middleware/index.js";
+
+/**
+ * Priority mapping:
+ */
 const TYPE_PRIORITY = {
   Placement: 3,
   Result: 2,
   Event: 1,
 };
 
-// Fetch notifications from API
 async function fetchNotifications(token) {
-  await Log("backend", "info", "service", "Fetching notifications from API");
+  await Log("backend", "info", "service", "Fetching notifications");
 
   const response = await fetch(
     "http://4.224.186.213/evaluation-service/notifications",
@@ -25,31 +29,30 @@ async function fetchNotifications(token) {
   );
 
   const data = await response.json();
-  return data.notifications;
+
+  console.log("RAW RESPONSE:", data);
+
+  return data.notifications || [];
 }
 
-// Sorting logic
 function sortNotifications(notifications) {
   return notifications.sort((a, b) => {
-    const priorityDiff =
+    const diff =
       TYPE_PRIORITY[b.Type] - TYPE_PRIORITY[a.Type];
 
-    if (priorityDiff !== 0) return priorityDiff;
+    if (diff !== 0) return diff;
 
-    // Recency comparison
     return new Date(b.Timestamp) - new Date(a.Timestamp);
   });
 }
 
-// Get Top N notifications
 function getTopN(notifications, n = 10) {
   return notifications.slice(0, n);
 }
 
-// Main function
 async function main(token) {
   try {
-    await Log("backend", "info", "handler", "Stage 1 execution started");
+    await Log("backend", "info", "handler", "Stage 1 started");
 
     const notifications = await fetchNotifications(token);
 
@@ -62,37 +65,29 @@ async function main(token) {
 
     const sorted = sortNotifications(notifications);
 
-    await Log(
-      "backend",
-      "info",
-      "service",
-      "Notifications sorted by priority"
-    );
-
     const top10 = getTopN(sorted, 10);
 
     await Log(
       "backend",
       "info",
       "service",
-      "Top 10 notifications prepared"
+      "Top 10 prepared"
     );
 
     console.log("\n===== TOP 10 NOTIFICATIONS =====\n");
     console.log(top10);
 
     return top10;
-  } catch (error) {
-    await Log(
-      "backend",
-      "fatal",
-      "handler",
-      "Error in Stage 1 execution"
-    );
-
-    console.error(error);
+  } catch (err) {
+    await Log("backend", "fatal", "handler", "Stage 1 failed");
+    console.error(err);
   }
 }
 
-// Export for testing
-module.exports = { main };
+/**
+ * RUN
+ */
+const token =
+  process.env.TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJtYWRodXJpc3JpcGVydW1hbGxhQGdtYWlsLmNvbSIsImV4cCI6MTc4MjM3NzQ4OCwiaWF0IjoxNzgyMzc2NTg4LCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiMDViMjdkY2QtOGU2Ni00MjYwLWEzZjktYTQyZDFjNmFjMWJlIiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoibWFkaHVyaSBwZXJ1bWFsbGEiLCJzdWIiOiI5MzE0YzFmZi05NGQ4LTRjNWYtOWIyMS0xYTI5NWFiNWZlZDMifSwiZW1haWwiOiJtYWRodXJpc3JpcGVydW1hbGxhQGdtYWlsLmNvbSIsIm5hbWUiOiJtYWRodXJpIHBlcnVtYWxsYSIsInJvbGxObyI6IjIzYjAxYTQ1OTIiLCJhY2Nlc3NDb2RlIjoiYWhYanZwIiwiY2xpZW50SUQiOiI5MzE0YzFmZi05NGQ4LTRjNWYtOWIyMS0xYTI5NWFiNWZlZDMiLCJjbGllbnRTZWNyZXQiOiJKcHJYa3Z5a0dSV254RkFHIn0.oVo3fUAVj9DSQnbbadIuT1CyxoBgs-ObX6XfJssPk3Y";
+
+await main(token);
