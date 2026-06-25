@@ -1,37 +1,34 @@
-# 📢 Campus Notifications System (AffordMed Campus Evaluation)
+# 📢 Campus Notifications System
 
 ## 📌 Overview
 
-This project is a full-stack campus notification system built for the AffordMed Campus Hiring Evaluation.
+This project is a full-stack notification system built as part of a campus evaluation process.
 
-It consists of:
-- Backend service for fetching, sorting, and prioritizing notifications
-- Frontend React dashboard for displaying notifications
-- Reusable Logging Middleware integrated across services
+It includes:
 
-The system demonstrates:
-- Priority-based data processing
-- API integration
-- Clean frontend architecture
-- Modular logging system
+- Backend service for fetching and prioritizing notifications  
+- Frontend React dashboard for displaying notifications  
+- Reusable logging middleware for observability  
+
+The system demonstrates priority-based processing, API integration, and modular frontend architecture.
 
 ---
 
 ## 🏗️ Tech Stack
 
-### Backend (notification-app-be)
+### Backend
 - Node.js (ES Modules)
-- Fetch API / Axios
+- Fetch API
 - Custom Logging Middleware
 
-### Frontend (notification-app-fe)
+### Frontend
 - React (Vite)
 - Material UI
 - Axios
 - React Router DOM
 
 ### Shared
-- Custom Logging Middleware Package
+- Reusable Logging Middleware Package
 
 ---
 
